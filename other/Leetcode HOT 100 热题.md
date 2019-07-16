@@ -1,10 +1,12 @@
 <!-- GFM-TOC -->
+
 * [1. 子集](#1-子集)
 * [2. 比特位计数](#2-比特位计数)
 * [3. 合并二叉树](#3-合并二叉树)
 * [4. 括号生成](#4-括号生成)
 * [5. 汉明距离](#5-汉明距离)
 * [6. 翻转二叉树](#6-翻转二叉树)
+* [7. 全排列](#7-全排列)
 <!-- GFM-TOC -->
 
 
@@ -210,6 +212,7 @@ public List<String> generateParenthesis(int n) {
 ```
 
 # 6. 翻转二叉树
+
 [Leetcode #226  (Easy)](https://leetcode-cn.com/problems/invert-binary-tree/)
 翻转一棵二叉树。
 ```html
@@ -234,6 +237,7 @@ public List<String> generateParenthesis(int n) {
 ```html
 谷歌：我们90％的工程师使用您编写的软件(Homebrew)，但是您却无法在面试时在白板上写出翻转二叉树这道题，这太糟糕了。
 ```
+边界，分部分调用，简化问题之后的处理，本质递归。
 ```java
     public TreeNode invertTree(TreeNode root) {
         if(root == null) return null;
@@ -244,3 +248,68 @@ public List<String> generateParenthesis(int n) {
         return root;
     }
 ````
+
+# 7. 全排列
+
+[Leetcode #46  (Mddium)](https://leetcode-cn.com/problems/permutations/)
+给定一个没有重复数字的序列，返回其所有可能的全排列。
+```html
+输入: [1,2,3]
+输出:
+[
+  [1,2,3],
+  [1,3,2],
+  [2,1,3],
+  [2,3,1],
+  [3,1,2],
+  [3,2,1]
+]
+```
+```html
+回溯法，暂时理解不透，记录之
+```
+
+回溯法 是一种通过探索所有可能的候选解来找出所有的解的算法。如果候选解被确认 不是 一个解的话（或者至少不是 最后一个 解），回溯算法会通过在上一步进行一些变化抛弃该解，即 回溯 并且再次尝试。
+
+这里有一个回溯函数，使用第一个整数的索引作为参数 backtrack(first)。
+
+* 如果第一个整数有索引 n，意味着当前排列已完成。
+* 遍历索引 first 到索引 n - 1 的所有整数。Iterate over the integers from index first to index n - 1.
+  - 在排列中放置第 i 个整数， 即 swap(nums[first], nums[i]).
+  - 继续生成从第 i 个整数开始的所有排列: backtrack(first + 1).
+  - 现在回溯，即通过 swap(nums[first], nums[i]) 还原.
+<div align="center"> <img src="img/Permutations.png" width=""/> </div><br>
+
+```java
+import java.util.Collections;
+class Solution {
+    public List<List<Integer>> permute(int[] nums) {
+        // init output list2
+        List<List<Integer>> output = new LinkedList();
+
+        // convert nums into list since the output is a list of lists
+        ArrayList<Integer> nums_lst = new ArrayList<Integer>();
+        for (int num : nums)
+          nums_lst.add(num);
+
+        int n = nums.length;
+        backtrack(n, nums_lst, output, 0);
+        return output;
+    }
+    
+    public void backtrack(int n,ArrayList<Integer> nums,List<List<Integer>> output,int first){
+        // if all integers are used up
+        if (first == n)
+          output.add(new ArrayList<Integer>(nums));
+        for (int i = first; i < n; i++) {
+          // place i-th integer first 
+          // in the current permutation
+          Collections.swap(nums, first, i);
+          // use next integers to complete the permutations
+          backtrack(n, nums, output, first + 1);
+          // backtrack
+          Collections.swap(nums, first, i);
+        }
+    }
+}
+```
