@@ -7,6 +7,9 @@
 * [5. 汉明距离](#5-汉明距离)
 * [6. 翻转二叉树](#6-翻转二叉树)
 * [7. 全排列](#7-全排列)
+* [8. 二叉树的最大深度](#8-二叉树的最大深度)
+* [9. 二叉树的中序遍历](#9-二叉树的中序遍历)]
+* [10. 组合总和](#10-组合总和)
 <!-- GFM-TOC -->
 
 
@@ -251,8 +254,9 @@ public List<String> generateParenthesis(int n) {
 
 # 7. 全排列
 
-[Leetcode #46  (Mddium)](https://leetcode-cn.com/problems/permutations/)
+[Leetcode #46  (Medium)](https://leetcode-cn.com/problems/permutations/)
 给定一个没有重复数字的序列，返回其所有可能的全排列。
+
 ```html
 输入: [1,2,3]
 输出:
@@ -279,7 +283,6 @@ public List<String> generateParenthesis(int n) {
   - 继续生成从第 i 个整数开始的所有排列: backtrack(first + 1).
   - 现在回溯，即通过 swap(nums[first], nums[i]) 还原.
 <div align="center"> <img src="img/Permutations.png" width=""/> </div><br>
-
 ```java
 import java.util.Collections;
 class Solution {
@@ -310,6 +313,176 @@ class Solution {
           // backtrack
           Collections.swap(nums, first, i);
         }
+    }
+}
+```
+
+# 8. 二叉树的最大深度
+
+[Leetcode #104  (Easy)](https://leetcode-cn.com/problems/maximum-depth-of-binary-tree/)
+
+给定一个二叉树，找出其最大深度。
+
+二叉树的深度为根节点到最远叶子节点的最长路径上的节点数。
+
+说明: 叶子节点是指没有子节点的节点。
+
+示例：
+给定二叉树 `[3,9,20,null,null,15,7]，`
+
+```html
+    3
+   / \
+  9  20
+    /  \
+   15   7
+```
+
+返回它的最大深度 3 。
+
+递归
+
+```java
+    public int maxDepth(TreeNode root) {
+        if(root == null){
+            return 0;
+        }else{
+            int left_height = maxDepth(root.left);
+            int right_height = maxDepth(root.right);
+            return java.lang.Math.max(left_height,right_height) + 1;
+        }
+    }
+```
+
+
+
+# 9. 二叉树的中序遍历
+[Leetcode #94  (Easy)](https://leetcode-cn.com/problems/binary-tree-inorder-traversal/)
+
+给定一个二叉树，返回它的*中序* 遍历。
+
+```html
+输入: [1,null,2,3]
+   1
+    \
+     2
+    /
+   3
+
+输出: [1,3,2]
+```
+
+**进阶:** 递归算法很简单，你可以通过迭代算法完成吗？
+
+
+
+必会基础题，在之前牛客算法班视频刷过，结果忘了，不过好处是有了算法任务清单的诞生，算法任务清单.md
+
+```java
+    public List < Integer > inorderTraversal(TreeNode root) {
+        List < Integer > res = new ArrayList < > ();
+        helper(root, res);
+        return res;
+    }
+
+    public void helper(TreeNode root, List < Integer > res) {
+        if (root != null) {
+            if (root.left != null) {
+                helper(root.left, res);
+            }
+            res.add(root.val);
+            if (root.right != null) {
+                helper(root.right, res);
+            }
+        }
+    }
+```
+
+#10. 组合总和
+[Leetcode #39  (Medium)](https://leetcode-cn.com/problems/combination-sum/)
+
+给定一个无重复元素的数组 `candidates` 和一个目标数 `target` ，找出 `candidates` 中所有可以使数字和为 `target` 的组合。
+
+`candidates` 中的数字可以无限制重复被选取。
+说明：
+
+- 所有数字（包括 `target`）都是正整数。
+- 解集不能包含重复的组合。 
+
+```html
+示例 1:
+
+输入: candidates = [2,3,6,7], target = 7,
+所求解集为:
+[
+  [7],
+  [2,2,3]
+]
+示例 2:
+
+输入: candidates = [2,3,5], target = 8,
+所求解集为:
+[
+  [2,2,2,2],
+  [2,3,3],
+  [3,5]
+]
+```
+
+
+
+回溯法思想汇总，与分析问题的思路示范。
+
+- [回溯算法 + 剪枝 python、java](https://leetcode-cn.com/problems/combination-sum/solution/hui-su-suan-fa-jian-zhi-python-dai-ma-java-dai-m-2/)
+- [学一套回溯算法 走天下](https://leetcode-cn.com/problems/combination-sum/solution/xue-yi-tao-zou-tian-xia-hui-su-suan-fa-by-powcai/)
+
+```java
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Stack;
+
+public class Solution {
+
+    private List<List<Integer>> res = new ArrayList<>();
+    private int[] candidates;
+    private int len;
+
+    private void findCombinationSum(int residue, int start, Stack<Integer> pre) {
+        if (residue == 0) {
+            res.add(new ArrayList<>(pre));
+            return;
+        }
+        // 优化添加的代码2：在循环的时候做判断，尽量避免系统栈的深度
+        // residue - candidates[i] 表示下一轮的剩余，如果下一轮的剩余都小于 0 ，就没有必要进行后面的循环了
+        // 这一点基于原始数组是排序数组的前提，因为如果计算后面的剩余，只会越来越小
+        for (int i = start; i < len && residue - candidates[i] >= 0; i++) {
+            pre.add(candidates[i]);
+            // 【关键】因为元素可以重复使用，这里递归传递下去的是 i 而不是 i + 1
+            findCombinationSum(residue - candidates[i], i, pre);
+            pre.pop();
+        }
+    }
+
+    public List<List<Integer>> combinationSum(int[] candidates, int target) {
+        int len = candidates.length;
+        if (len == 0) {
+            return res;
+        }
+        // 优化添加的代码1：先对数组排序，可以提前终止判断
+        Arrays.sort(candidates);
+        this.len = len;
+        this.candidates = candidates;
+        findCombinationSum(target, 0, new Stack<>());
+        return res;
+    }
+
+    public static void main(String[] args) {
+        int[] candidates = {2, 3, 6, 7};
+        int target = 7;
+        Solution solution = new Solution();
+        List<List<Integer>> combinationSum = solution.combinationSum(candidates, target);
+        System.out.println(combinationSum);
     }
 }
 ```
