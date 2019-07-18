@@ -1,15 +1,14 @@
 <!-- GFM-TOC -->
-
 * [11. 反转链表](#11-反转链表)
 * [12. 旋转图像](#12-旋转图像)
 * [13. 二叉树展开为链表](#13-二叉树展开为链表)
 * [14. 根据身高重建队列](#14-根据升高重建队列)
 * [15. 只出现一次的数字](#15-只出现一次的数字)
 * [16. 翻转二叉树](#6-翻转二叉树)
-* [17. 全排列](#7-全排列)
-* [18. 二叉树的最大深度](#8-二叉树的最大深度)
-* [19. 二叉树的中序遍历](#9-二叉树的中序遍历)]
-* [20. 组合总和](#10-组合总和)
+* [17. 全排列](#17-全排列)
+* [18. 不同的二叉搜索树](#18-不同的二叉搜索树)
+* [19. 排序链表](#19-排序链表)
+* [20. 寻找重复数](#20-寻找重复数)
   <!-- GFM-TOC -->
 
 
@@ -269,243 +268,172 @@ class Solution {
 进阶：
 你可以在常数空间复杂度内完成这个题目吗？（ 出于对空间复杂度分析的目的，输出数组不被视为额外空间。）
 
-
+分治法思想 
+- 乘积 = 当前数左边的乘积 * 当前数右边的乘积
 ```java
-    
-    
+    public int[] productExceptSelf(int[] nums) {
+        int[] res = new int[nums.length];
+        int k = 1;
+        for(int i = 0; i < res.length; i++){
+            res[i] = k;
+            k = k * nums[i]; // 此时数组存储的是除去当前元素左边的元素乘积
+        }
+        k = 1;
+        for(int i = res.length - 1; i >= 0; i--){
+            res[i] *= k; // k为该数右边的乘积。
+            k *= nums[i]; // 此时数组等于左边的 * 该数右边的。
+        }
+        return res;
+    }
 ````
 
-# 17. 全排列
+# 17. 最小路径和
 
-[Leetcode #46  (Medium)](https://leetcode-cn.com/problems/permutations/)
-给定一个没有重复数字的序列，返回其所有可能的全排列。
+[Leetcode #64  (Medium)](https://leetcode-cn.com/problems/minimum-path-sum/)
+给定一个包含非负整数的 m x n 网格，请找出一条从左上角到右下角的路径，使得路径上的数字总和为最小。
 
+说明：每次只能向下或者向右移动一步。
 ```html
-输入: [1,2,3]
-输出:
+输入:
 [
-  [1,2,3],
-  [1,3,2],
-  [2,1,3],
-  [2,3,1],
-  [3,1,2],
-  [3,2,1]
+  [1,3,1],
+  [1,5,1],
+  [4,2,1]
 ]
+输出: 7
+解释: 因为路径 1→3→1→1→1 的总和最小。
 ```
-```html
-回溯法，暂时理解不透，记录之
-```
 
-回溯法 是一种通过探索所有可能的候选解来找出所有的解的算法。如果候选解被确认 不是 一个解的话（或者至少不是 最后一个 解），回溯算法会通过在上一步进行一些变化抛弃该解，即 回溯 并且再次尝试。
-
-这里有一个回溯函数，使用第一个整数的索引作为参数 backtrack(first)。
-
-* 如果第一个整数有索引 n，意味着当前排列已完成。
-* 遍历索引 first 到索引 n - 1 的所有整数。Iterate over the integers from index first to index n - 1.
-  - 在排列中放置第 i 个整数， 即 swap(nums[first], nums[i]).
-  - 继续生成从第 i 个整数开始的所有排列: backtrack(first + 1).
-  - 现在回溯，即通过 swap(nums[first], nums[i]) 还原.
-<div align="center"> <img src="img/Permutations.png" width=""/> </div><br>
+- 暴力递归(超出时间限制)
+- 动态规划
 ```java
-import java.util.Collections;
-class Solution {
-    public List<List<Integer>> permute(int[] nums) {
-        // init output list2
-        List<List<Integer>> output = new LinkedList();
-
-        // convert nums into list since the output is a list of lists
-        ArrayList<Integer> nums_lst = new ArrayList<Integer>();
-        for (int num : nums)
-          nums_lst.add(num);
-
-        int n = nums.length;
-        backtrack(n, nums_lst, output, 0);
-        return output;
+    public int calculate(int[][] grid, int i, int j) {
+        if (i == grid.length || j == grid[0].length) return Integer.MAX_VALUE;
+        if (i == grid.length - 1 && j == grid[0].length - 1) return grid[i][j];
+        return grid[i][j] + Math.min(calculate(grid, i + 1, j), calculate(grid, i, j + 1));
     }
-    
-    public void backtrack(int n,ArrayList<Integer> nums,List<List<Integer>> output,int first){
-        // if all integers are used up
-        if (first == n)
-          output.add(new ArrayList<Integer>(nums));
-        for (int i = first; i < n; i++) {
-          // place i-th integer first 
-          // in the current permutation
-          Collections.swap(nums, first, i);
-          // use next integers to complete the permutations
-          backtrack(n, nums, output, first + 1);
-          // backtrack
-          Collections.swap(nums, first, i);
+    public int minPathSum(int[][] grid) {
+        return calculate(grid, 0, 0);
+    }
+```
+
+# 18. 二叉树的最大深度
+
+[Leetcode #96  (Medium)](https://leetcode-cn.com/problems/unique-binary-search-trees/)
+给定一个整数 n，求以 1 ... n 为节点组成的二叉搜索树有多少种？
+```html
+输入: 3
+输出: 5
+解释:
+给定 n = 3, 一共有 5 种不同结构的二叉搜索树:
+
+   1         3     3      2      1
+    \       /     /      / \      \
+     3     2     1      1   3      2
+    /     /       \                 \
+   2     1         2                 3
+```
+
+- 动态规划 迟早要攻克你
+```java
+  public int numTrees(int n) {
+    int[] G = new int[n + 1];
+    G[0] = 1;
+    G[1] = 1;
+
+    for (int i = 2; i <= n; ++i) {
+      for (int j = 1; j <= i; ++j) {
+        G[i] += G[j - 1] * G[i - j];
+      }
+    }
+    return G[n];
+  }
+
+```
+
+
+
+# 19. 排序链表
+
+[Leetcode #148  (Medium)](https://leetcode-cn.com/problems/sort-list/)
+在 O(n log n) 时间复杂度和常数级空间复杂度下，对链表进行排序。
+
+```html
+示例 1:
+
+输入: 4->2->1->3
+输出: 1->2->3->4
+示例 2:
+
+输入: -1->5->3->4->0
+输出: -1->0->3->4->5
+```
+
+- [链表归并排序](https://leetcode-cn.com/problems/sort-list/solution/sort-list-gui-bing-pai-xu-lian-biao-by-jyd/)
+```java
+    public ListNode sortList(ListNode head) {
+        if (head == null || head.next == null)
+            return head;
+        ListNode fast = head.next, slow = head;
+        while (fast != null && fast.next != null) {
+            slow = slow.next;
+            fast = fast.next.next;
         }
-    }
-}
-```
-
-# 8. 二叉树的最大深度
-
-[Leetcode #104  (Easy)](https://leetcode-cn.com/problems/maximum-depth-of-binary-tree/)
-
-给定一个二叉树，找出其最大深度。
-
-二叉树的深度为根节点到最远叶子节点的最长路径上的节点数。
-
-说明: 叶子节点是指没有子节点的节点。
-
-示例：
-给定二叉树 `[3,9,20,null,null,15,7]，`
-
-```html
-    3
-   / \
-  9  20
-    /  \
-   15   7
-```
-
-返回它的最大深度 3 。
-
-递归
-
-```java
-    public int maxDepth(TreeNode root) {
-        if(root == null){
-            return 0;
-        }else{
-            int left_height = maxDepth(root.left);
-            int right_height = maxDepth(root.right);
-            return java.lang.Math.max(left_height,right_height) + 1;
-        }
-    }
-```
-
-
-
-# 9. 二叉树的中序遍历
-[Leetcode #94  (Easy)](https://leetcode-cn.com/problems/binary-tree-inorder-traversal/)
-
-给定一个二叉树，返回它的*中序* 遍历。
-
-```html
-输入: [1,null,2,3]
-   1
-    \
-     2
-    /
-   3
-
-输出: [1,3,2]
-```
-
-**进阶:** 递归算法很简单，你可以通过迭代算法完成吗？
-
-
-
-必会基础题，在之前牛客算法班视频刷过，结果忘了，不过好处是有了算法任务清单的诞生，算法任务清单.md
-
-```java
-    public List < Integer > inorderTraversal(TreeNode root) {
-        List < Integer > res = new ArrayList < > ();
-        helper(root, res);
-        return res;
-    }
-
-    public void helper(TreeNode root, List < Integer > res) {
-        if (root != null) {
-            if (root.left != null) {
-                helper(root.left, res);
+        ListNode tmp = slow.next;
+        slow.next = null;
+        ListNode left = sortList(head);
+        ListNode right = sortList(tmp);
+        ListNode h = new ListNode(0);
+        ListNode res = h;
+        while (left != null && right != null) {
+            if (left.val < right.val) {
+                h.next = left;
+                left = left.next;
+            } else {
+                h.next = right;
+                right = right.next;
             }
-            res.add(root.val);
-            if (root.right != null) {
-                helper(root.right, res);
-            }
+            h = h.next;
         }
+        h.next = left != null ? left : right;
+        return res.next;
     }
 ```
 
-#10. 组合总和
-[Leetcode #39  (Medium)](https://leetcode-cn.com/problems/combination-sum/)
+#20. 寻找重复数
 
-给定一个无重复元素的数组 `candidates` 和一个目标数 `target` ，找出 `candidates` 中所有可以使数字和为 `target` 的组合。
+[Leetcode #287  (Medium)](https://leetcode-cn.com/problems/find-the-duplicate-number/)
+给定一个包含 n + 1 个整数的数组 nums，其数字都在 1 到 n 之间（包括 1 和 n），可知至少存在一个重复的整数。假设只有一个重复的整数，找出这个重复的数。
+```html
+示例 1:
 
-`candidates` 中的数字可以无限制重复被选取。
+输入: [1,3,4,2,2]
+输出: 2
+示例 2:
+
+输入: [3,1,3,4,2]
+输出: 3
+```
 说明：
 
-- 所有数字（包括 `target`）都是正整数。
-- 解集不能包含重复的组合。 
+1. 不能更改原数组（假设数组是只读的）。
+2. 只能使用额外的 O(1) 的空间。
+3. 时间复杂度小于 O(n2) 。
+4. 数组中只有一个重复的数字，但它可能不止重复出现一次。
 
-```html
-示例 1:
-
-输入: candidates = [2,3,6,7], target = 7,
-所求解集为:
-[
-  [7],
-  [2,2,3]
-]
-示例 2:
-
-输入: candidates = [2,3,5], target = 8,
-所求解集为:
-[
-  [2,2,2,2],
-  [2,3,3],
-  [3,5]
-]
-```
-
-
-
-回溯法思想汇总，与分析问题的思路示范。
-
-- [回溯算法 + 剪枝 python、java](https://leetcode-cn.com/problems/combination-sum/solution/hui-su-suan-fa-jian-zhi-python-dai-ma-java-dai-m-2/)
-- [学一套回溯算法 走天下](https://leetcode-cn.com/problems/combination-sum/solution/xue-yi-tao-zou-tian-xia-hui-su-suan-fa-by-powcai/)
-
+- 抽屉原理
+- 面试真实
+- 排序思想
+有最好的方法，面试官竟然不希望有人直接给出，会被认为是有备而来，不是真实水平。
 ```java
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Stack;
-
-public class Solution {
-
-    private List<List<Integer>> res = new ArrayList<>();
-    private int[] candidates;
-    private int len;
-
-    private void findCombinationSum(int residue, int start, Stack<Integer> pre) {
-        if (residue == 0) {
-            res.add(new ArrayList<>(pre));
-            return;
+	 public int findDuplicate(int[] nums) {
+        Arrays.sort(nums);
+        for (int i = 1; i < nums.length; i++) {
+            if (nums[i] == nums[i-1]) {
+                return nums[i];
+            }
         }
-        // 优化添加的代码2：在循环的时候做判断，尽量避免系统栈的深度
-        // residue - candidates[i] 表示下一轮的剩余，如果下一轮的剩余都小于 0 ，就没有必要进行后面的循环了
-        // 这一点基于原始数组是排序数组的前提，因为如果计算后面的剩余，只会越来越小
-        for (int i = start; i < len && residue - candidates[i] >= 0; i++) {
-            pre.add(candidates[i]);
-            // 【关键】因为元素可以重复使用，这里递归传递下去的是 i 而不是 i + 1
-            findCombinationSum(residue - candidates[i], i, pre);
-            pre.pop();
-        }
-    }
 
-    public List<List<Integer>> combinationSum(int[] candidates, int target) {
-        int len = candidates.length;
-        if (len == 0) {
-            return res;
-        }
-        // 优化添加的代码1：先对数组排序，可以提前终止判断
-        Arrays.sort(candidates);
-        this.len = len;
-        this.candidates = candidates;
-        findCombinationSum(target, 0, new Stack<>());
-        return res;
+        return -1;
     }
-
-    public static void main(String[] args) {
-        int[] candidates = {2, 3, 6, 7};
-        int target = 7;
-        Solution solution = new Solution();
-        List<List<Integer>> combinationSum = solution.combinationSum(candidates, target);
-        System.out.println(combinationSum);
-    }
-}
 ```
