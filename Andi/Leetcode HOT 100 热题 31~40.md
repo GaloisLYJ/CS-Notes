@@ -1,14 +1,24 @@
 <!-- GFM-TOC -->
 * [31. 二叉树的最近公共祖先](#31-二叉树的最近公共祖先)
-* [22. 实现Trie(前缀树)](#22-实现Trie(前缀树))
-* [23. 从前序与中序遍历序列构造二叉树](#23-从前序与中序遍历序列构造二叉树)
-* [24. 每日温度](#24-每日温度)
-* [25. 数组中的第K个最大元素](#25-数组中的第K个最大元素)
-* [26. 二叉树的层次遍历](#26-二叉树的层次遍历)
-* [27. 前K个高频元素](#27-前K个高频元素)
-* [28. 字母异位词分组](#28-字母异位词分组)
-* [29. 回文子串](#29-回文子串)
-* [30. 盛最多水的容器](#30-盛最多水的容器)
+
+* [40. 合并两个有序链表](#40-合并两个有序链表)
+
+* [33. 移动零](#33-移动零)
+
+* [34. 把二叉搜索树转换为累加树](#34-把二叉搜索树转换为累加树)
+
+* [35. 不同路径](#35-不同路径)
+
+* [36. 戳气球](#36-戳气球)
+
+* [37. 打家劫舍III](#37-打家劫舍III)
+
+* [38. 编辑距离](#37-编辑距离)
+
+* [39. 颜色分类](#39-颜色分类)
+
+* [40. 路径总和III](#39-路径总和III)
+
   <!-- GFM-TOC -->
 
 
@@ -292,5 +302,241 @@ class Solution {
         }
         return d[0][a.length-1];
 
+    }
+```
+
+# 37. 打家劫舍III
+
+[Leetcode #337 (Medium)](https://leetcode-cn.com/problems/house-robber-iii/)
+在上次打劫完一条街道之后和一圈房屋后，小偷又发现了一个新的可行窃的地区。这个地区只有一个入口，我们称之为“根”。 除了“根”之外，每栋房子有且只有一个“父“房子与之相连。一番侦察之后，聪明的小偷意识到“这个地方的所有房屋的排列类似于一棵二叉树”。 如果两个直接相连的房子在同一天晚上被打劫，房屋将自动报警。
+
+计算在不触动警报的情况下，小偷一晚能够盗取的最高金额。
+```html
+示例 1:
+
+输入: [3,2,3,null,3,null,1]
+
+     3
+    / \
+   2   3
+    \   \ 
+     3   1
+
+输出: 7 
+解释: 小偷一晚能够盗取的最高金额 = 3 + 3 + 1 = 7.
+示例 2:
+
+输入: [3,4,5,1,3,null,1]
+
+           3
+    / \
+   4   5
+  / \   \ 
+ 1   3   1
+
+输出: 9
+解释: 小偷一晚能够盗取的最高金额 = 4 + 5 = 9.
+```
+- 递归
+```java
+class Solution {
+    public int rob(TreeNode root){
+        return doRob(root);
+    }
+    private int doRob(TreeNode node){
+        if (node == null)
+            return 0;
+        int include = node.val;
+        int exclude = doRob(node.left) + doRob(node.right);
+        if (node.left != null)
+        {
+            include += doRob(node.left.left);
+            include += doRob(node.left.right);
+        }
+        if (node.right != null){
+            include += doRob(node.right.left);
+            include += doRob(node.right.right);
+        }
+        return Math.max(include,exclude);
+    }
+}
+```
+# 38. 编辑距离
+
+[Leetcode #72 (Difficult)](https://leetcode-cn.com/problems/edit-distance/)
+给定两个单词 word1 和 word2，计算出将 word1 转换成 word2 所使用的最少操作数 。
+
+你可以对一个单词进行如下三种操作：
+1. 插入一个字符
+2. 删除一个字符
+3. 替换一个字符
+```html
+示例 1:
+
+输入: word1 = "horse", word2 = "ros"
+输出: 3
+解释: 
+horse -> rorse (将 'h' 替换为 'r')
+rorse -> rose (删除 'r')
+rose -> ros (删除 'e')
+示例 2:
+
+输入: word1 = "intention", word2 = "execution"
+输出: 5
+解释: 
+intention -> inention (删除 't')
+inention -> enention (将 'i' 替换为 'e')
+enention -> exention (将 'n' 替换为 'x')
+exention -> exection (将 'n' 替换为 'c')
+exection -> execution (插入 'u')
+```
+
+- 动态规划
+```java
+class Solution {
+  public int minDistance(String word1, String word2) {
+    int n = word1.length();
+    int m = word2.length();
+
+    // if one of the strings is empty
+    if (n * m == 0)
+      return n + m;
+
+    // array to store the convertion history
+    int [][] d = new int[n + 1][m + 1];
+
+    // init boundaries
+    for (int i = 0; i < n + 1; i++) {
+      d[i][0] = i;
+    }
+    for (int j = 0; j < m + 1; j++) {
+      d[0][j] = j;
+    }
+
+    // DP compute 
+    for (int i = 1; i < n + 1; i++) {
+      for (int j = 1; j < m + 1; j++) {
+        int left = d[i - 1][j] + 1;
+        int down = d[i][j - 1] + 1;
+        int left_down = d[i - 1][j - 1];
+        if (word1.charAt(i - 1) != word2.charAt(j - 1))
+          left_down += 1;
+        d[i][j] = Math.min(left, Math.min(down, left_down));
+
+      }
+    }
+    return d[n][m];
+  }
+}
+```
+
+# 39. 颜色分类
+
+[Leetcode #75 (Medium)](https://leetcode-cn.com/problems/sort-colors/)
+给定一个包含红色、白色和蓝色，一共 n 个元素的数组，原地对它们进行排序，使得相同颜色的元素相邻，并按照红色、白色、蓝色顺序排列。
+
+此题中，我们使用整数 0、 1 和 2 分别表示红色、白色和蓝色。
+
+注意:
+不能使用代码库中的排序函数来解决这道题。
+```html
+示例:
+
+输入: [2,0,2,1,1,0]
+输出: [0,0,1,1,2,2]
+```
+进阶：
+
+- 一个直观的解决方案是使用计数排序的两趟扫描算法。
+首先，迭代计算出0、1 和 2 元素的个数，然后按照0、1、2的排序，重写当前数组。
+
+- 你能想出一个仅使用常数空间的一趟扫描算法吗？
+
+- 荷兰国旗问题
+- 双指针扫描
+```java
+class Solution {
+  /*
+  荷兰三色旗问题解
+  */
+  public void sortColors(int[] nums) {
+    // 对于所有 idx < i : nums[idx < i] = 0
+    // j是当前考虑元素的下标
+    int p0 = 0, curr = 0;
+    // 对于所有 idx > k : nums[idx > k] = 2
+    int p2 = nums.length - 1;
+
+    int tmp;
+    while (curr <= p2) {
+      if (nums[curr] == 0) {
+        // 交换第 p0个和第curr个元素
+        // i++，j++
+        tmp = nums[p0];
+        nums[p0++] = nums[curr];
+        nums[curr++] = tmp;
+      }
+      else if (nums[curr] == 2) {
+        // 交换第k个和第curr个元素
+        // p2--
+        tmp = nums[curr];
+        nums[curr] = nums[p2];
+        nums[p2--] = tmp;
+      }
+      else curr++;
+    }
+  }
+}
+```
+
+# 40. 路径总和
+
+[Leetcode 437 (Easy)](https://leetcode-cn.com/problems/path-sum-iii/)
+
+给定一个二叉树，它的每个结点都存放着一个整数值。
+找出路径和等于给定数值的路径总数。
+
+路径不需要从根节点开始，也不需要在叶子节点结束，但是路径方向必须是向下的（只能从父节点到子节点）。
+
+二叉树不超过1000个节点，且节点数值范围是 [-1000000,1000000] 的整数。
+
+```html
+示例：
+
+root = [10,5,-3,3,2,null,11,3,-2,null,1], sum = 8
+
+      10
+     /  \
+    5   -3
+   / \    \
+  3   2   11
+ / \   \
+3  -2   1
+
+返回 3。和等于 8 的路径有:
+
+1.  5 -> 3
+2.  5 -> 2 -> 1
+3.  -3 -> 11
+```
+
+- 递归
+
+```java
+public int pathSum(TreeNode root, int sum) {
+    
+  if (root==null)
+            return 0;
+        return pathSum(root.left, sum) + pathSum(root.right, sum) + dfs(root, sum);
+    }
+    
+    public int dfs(TreeNode node, int sum) {
+        if (node==null)
+            return 0;
+        
+        int count = 0;
+        if (node.val == sum)
+            count = 1;
+        
+        return count + dfs(node.left, sum - node.val) + dfs(node.right, sum - node.val);
     }
 ```
