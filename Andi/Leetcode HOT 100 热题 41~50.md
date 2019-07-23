@@ -631,87 +631,123 @@ class Solution {
 
 [贪心算法、优先队列](<https://leetcode-cn.com/problems/merge-k-sorted-lists/solution/tan-xin-suan-fa-you-xian-dui-lie-fen-zhi-fa-python/>)
 
+[分治法、递归](https://leetcode-cn.com/problems/merge-k-sorted-lists/solution/javafen-zhi-fa-di-gui-onlogk-by-heator/)
+
 ```java
-import java.util.Comparator;
-import java.util.PriorityQueue;
-
-class ListNode {
-    int val;
-    ListNode next;
-
-    ListNode(int x) {
-        val = x;
-    }
-
-    ListNode(Integer[] nums) {
-        ListNode currNode = this;
-        currNode.val = nums[0];
-        for (int i = 1; i < nums.length; i++) {
-            currNode.next = new ListNode(nums[i]);
-            currNode = currNode.next;
-        }
-    }
-
-    @Override
-    public String toString() {
-        ListNode currNode = this;
-        StringBuilder s = new StringBuilder();
-        while (currNode != null) {
-            s.append(currNode.val);
-            s.append(" -> ");
-            currNode = currNode.next;
-        }
-        // 最后添加一个 NULL 标志表示添加到末尾了
-        s.append("NULL");
-        return s.toString();
-    }
-}
-
-public class Solution {
-
+class Solution {
+    
+    /**
+     * 合并 k 个排序链表，返回合并后的排序链表。
+     * 两两合并,分治法,O(nlogk)
+     * @param lists
+     * @return
+     */
     public ListNode mergeKLists(ListNode[] lists) {
-        int len = lists.length;
-        if (len == 0) {
-            return null;
-        }
-        PriorityQueue<ListNode> priorityQueue = new PriorityQueue<>(len, Comparator.comparingInt(a -> a.val));
-        ListNode dummyNode = new ListNode(-1);
-        ListNode curNode = dummyNode;
-        for (ListNode list : lists) {
-            if (list != null) {
-                // 这一步很关键，不能也没有必要将空对象添加到优先队列中
-                priorityQueue.add(list);
-            }
-        }
-        while (!priorityQueue.isEmpty()) {
-            // 优先队列非空才能出队
-            ListNode node = priorityQueue.poll();
-            // 当前节点的 next 指针指向出队元素
-            curNode.next = node;
-            // 当前指针向前移动一个元素，指向了刚刚出队的那个元素
-            curNode = curNode.next;
-            if (curNode.next != null) {
-                // 只有非空节点才能加入到优先队列中
-                priorityQueue.add(curNode.next);
-            }
-        }
-        return dummyNode.next;
+        int len=lists.length;
+        if(len<1) return null;
+        if (len==1) return lists[0];
+        //分解list1
+        ListNode[] ps11 = new ListNode[len/2],ps12 = new ListNode[len/2];
+        System.arraycopy(lists,0,ps11,0,len/2);
+        System.arraycopy(lists,len/2,ps12,0,len/2);
+        //判断lists[]长度为奇数还是偶数
+        return len%2==0?mergeList(ps11,ps12):mergeListNode(lists[len-1],mergeList(ps11,ps12));
     }
 
-    public static void main(String[] args) {
-        Integer[] nums1 = {1, 4, 5};
-        Integer[] nums2 = {1, 3, 4};
-        Integer[] nums3 = {2, 6};
-        ListNode head1 = new ListNode(nums1);
-        ListNode head2 = new ListNode(nums2);
-        ListNode head3 = new ListNode(nums3);
-        ListNode[] lists = new ListNode[3];
-        lists[0] = head1;
-        lists[1] = head2;
-        lists[2] = head3;
-        Solution solution = new Solution();
-        ListNode mergeKLists = solution.mergeKLists(lists);
-        System.out.println(mergeKLists);
+    /**
+     * 分治法,递归,O(nlogk)
+     * @param list1
+     * @param list2
+     */
+    private static ListNode mergeList(ListNode[] list1,ListNode[] list2){
+        int len1=list1.length,len2=list2.length;
+        if (len1<=1&&len2<=1) {
+            return mergeListNode(list1[0],list2[0]);
+        }else {
+            //分解list1
+            ListNode[] ps11 = new ListNode[len1/2],ps12 = new ListNode[len1/2];
+            System.arraycopy(list1,0,ps11,0,len1/2);
+            System.arraycopy(list1,len1/2,ps12,0,len1/2);
+            //分解list2
+            ListNode[] ps21 = new ListNode[len2/2],ps22 = new ListNode[len2/2];
+            System.arraycopy(list2,0,ps21,0,len2/2);
+            System.arraycopy(list2,len2/2,ps22,0,len2/2);
+            //如果两个list[]长度均为奇数
+            if (len1%2!=0&&len2%2!=0){
+                return mergeListNode(
+                        mergeListNode(list1[len1-1],list2[len2-1]),
+                        mergeListNode(mergeList(ps11,ps12),mergeList(ps21,ps22))
+                );
+            }else if (len1%2!=0){
+                //如果list1[]长度为奇数
+                return mergeListNode(
+                        list1[len1-1],
+                        mergeListNode(mergeList(ps11,ps12),mergeList(ps21,ps22))
+                        );
+            }else if(len2%2!=0) {
+                //如果list2[]长度为奇数
+                return mergeListNode(
+                        mergeListNode(mergeList(ps11,ps12),mergeList(ps21,ps22)),
+                        list2[len2-1]
+                        );
+            }else {
+                //如果均为偶数
+                return mergeListNode(mergeList(ps11,ps12),mergeList(ps21,ps22));
+            }
+        }
+    }
+
+    /**
+     * 合并两个链表
+     * @param l1
+     * @param l2
+     * @return
+     */
+    private static ListNode mergeListNode(ListNode l1, ListNode l2){
+        ListNode dummyhead=new ListNode(0);
+        merge(dummyhead,l1,l2);
+        return dummyhead.next;
+    }
+
+    /**
+     * 递归合并
+     * @param head
+     * @param l1
+     * @param l2
+     * @return
+     */
+    private static void merge(ListNode head, ListNode l1, ListNode l2) {
+        if (l1 != null && l2 != null) {
+            //把head.next和l1.next放到下一轮递归
+            if (l1.val <= l2.val) {
+                head.next = l1;
+                ListNode p = l1.next;
+                l1.next = null;
+                merge(head.next, p, l2);
+            } else {
+                //把head.next和l2.next放到下一轮递归
+                head.next = l2;
+                ListNode p = l2.next;
+                l2.next = null;
+                merge(head.next, l1, p);
+            }
+        }
+        if (l1 == null && l2 == null) ;
+        if (l1 == null && l2 != null) {
+            //把head.next和l2.next放到下一轮递归
+            head.next = l2;
+            ListNode p = l2.next;
+            l2.next = null;
+            merge(head.next, l1, p);
+
+        }
+        if (l1 != null && l2 == null) {
+            //把head.next和l1.next放到下一轮递归
+            head.next = l1;
+            ListNode p = l1.next;
+            l1.next = null;
+            merge(head.next, p, l2);
+        }
     }
 }
 ```
