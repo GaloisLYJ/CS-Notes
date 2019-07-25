@@ -6,6 +6,10 @@
 * [54. 爬楼梯](#54-爬楼梯)
 * [55. 相交链表](#55-相交链表)
 * [56. 二叉树的直径](#56-二叉树的直径)
+* [57. 最长连续序列](#57. 最长连续序列)
+* [58. 接雨水](#58. 接雨水)
+* [59. 字符串解码](#https://leetcode-cn.com/problems/decode-string/)
+* [60. 岛屿数量](#https://leetcode-cn.com/problems/number-of-islands/)
 
 
   <!-- GFM-TOC -->
@@ -296,3 +300,249 @@ class Solution {
 }
 ```
 
+# 57. 最长连续序列
+
+[Leetcode #128 (Difficult)](https://leetcode-cn.com/problems/longest-consecutive-sequence/)
+
+给定一个未排序的整数数组，找出最长连续序列的长度。
+
+要求算法的时间复杂度为 *O(n)*。
+
+```html
+输入: [100, 4, 200, 1, 3, 2]
+输出: 4
+解释: 最长连续序列是 [1, 2, 3, 4]。它的长度为 4。
+```
+
+- 暴力法
+- 排序
+- 哈希表和连续空间构造
+
+```java
+class Solution {
+    public int longestConsecutive(int[] nums) {
+        Set<Integer> num_set = new HashSet<Integer>();
+        for (int num : nums) {
+            num_set.add(num);
+        }
+
+        int longestStreak = 0;
+
+        for (int num : num_set) {
+            if (!num_set.contains(num-1)) {
+                int currentNum = num;
+                int currentStreak = 1;
+
+                while (num_set.contains(currentNum+1)) {
+                    currentNum += 1;
+                    currentStreak += 1;
+                }
+
+                longestStreak = Math.max(longestStreak, currentStreak);
+            }
+        }
+
+        return longestStreak;
+    }
+}
+```
+
+
+
+# 58. 接雨水
+
+[Leetcode #42 (Difficult)](https://leetcode-cn.com/problems/trapping-rain-water/)
+
+给定 *n* 个非负整数表示每个宽度为 1 的柱子的高度图，计算按此排列的柱子，下雨之后能接多少雨水。
+
+<img src="https://assets.leetcode-cn.com/aliyun-lc-upload/uploads/2018/10/22/rainwatertrap.png">
+
+上面是由数组 [0,1,0,2,1,0,1,3,2,1,2,1] 表示的高度图，在这种情况下，可以接 6 个单位的雨水（蓝色部分表示雨水）。
+
+```html
+示例:
+
+输入: [0,1,0,2,1,0,1,3,2,1,2,1]
+输出: 6
+```
+
+- 暴力法
+- 动态编程
+- 栈的应用
+- 双指针
+
+```java
+    public int trap(int[] height)
+    {
+        int ans = 0;
+        int size = height.length;
+        for (int i = 1; i < size - 1; i++) {
+            int max_left = 0, max_right = 0;
+            for (int j = i; j >= 0; j--) { //Search the left part for max bar size
+                max_left = Math.max(max_left, height[j]);
+            }
+            for (int j = i; j < size; j++) { //Search the right part for max bar size
+                max_right = Math.max(max_right, height[j]);
+            }
+            ans += Math.min(max_left, max_right) - height[i];
+        }
+        return ans;
+    }
+```
+
+# 59. 字符串解码
+
+[Leetcode #394 (Medium)](#https://leetcode-cn.com/problems/decode-string/)
+
+给定一个经过编码的字符串，返回它解码后的字符串。
+
+编码规则为: `k[encoded_string]`，表示其中方括号内部的 encoded_string 正好重复 k 次。注意 k 保证为正整数。
+
+你可以认为输入字符串总是有效的；输入字符串中没有额外的空格，且输入的方括号总是符合格式要求的。
+
+此外，你可以认为原始数据不包含数字，所有的数字只表示重复的次数 k ，例如不会出现像 `3a` 或 `2[4]` 的输入。
+
+```html
+s = "3[a]2[bc]", 返回 "aaabcbc".
+s = "3[a2[c]]", 返回 "accaccacc".
+s = "2[abc]3[cd]ef", 返回 "abcabccdcdcdef".
+```
+
+- 括号匹配与栈
+
+  ```java
+  class Solution {
+      public String decodeString(String s) {
+          StringBuilder res = new StringBuilder();
+          Stack<Integer> numStack = new Stack<>();
+          Stack<String> strStack = new Stack<>();
+          String tempStr = null;
+          for (int i = 0; i < s.length(); i++) {
+              char c = s.charAt(i);
+              if (s.charAt(i) == ']') {
+                  String str = strStack.pop();
+                  int num = numStack.pop();
+                  String nowStr = repeatStr(str, num);
+                  if (!numStack.isEmpty()) {
+                     StringBuilder  builder = new StringBuilder();
+                     builder.append(strStack.peek());
+                     builder.append(nowStr);
+                     int m = i + 1;
+                     while (s.charAt(m) != ']' && !('0' < s.charAt(m) && '9' >= s.charAt(m))) {
+                         m++;
+                     }
+                     builder.append(s.substring(i + 1, m));
+                     strStack.set(strStack.size() - 1, builder.toString());
+                     i = m - 1;
+                  } else {
+                      tempStr = null;
+                      res.append(nowStr);
+                  }
+              } else if ('0' <= c && '9' >= c) {
+                  int m = i + 1;
+                  while ('0' <= s.charAt(m) && '9' >= s.charAt(m)) {
+                      m++;
+                  }
+                  numStack.push(Integer.parseInt(s.substring(i, m)));
+                  i = m - 1;
+                  int k =  i + 2;
+                  while (s.charAt(k) != ']' && !('0' <= s.charAt(k) && '9' >= s.charAt(k)))  {
+                      k++;
+                  }
+                  strStack.push(s.substring(i+2, k));
+                  i = k - 1;
+              } else if (numStack.isEmpty()) {
+                  res.append(s.charAt(i));
+              }
+          }
+          return res.toString();
+      }
+  
+      private String repeatStr(String str, int num) {
+          StringBuilder sb = new StringBuilder();
+          if (num <= 0) {
+              return "";
+          }
+          for (int i = 0; i < num; i++) {
+              sb.append(str);
+          }
+          return sb.toString();
+      }
+  }
+  ```
+
+  
+
+# 60. 岛屿数量
+
+[Leetcode #200 (Medium)](https://leetcode-cn.com/problems/number-of-islands/)
+
+给定一个由 '1'（陆地）和 '0'（水）组成的的二维网格，计算岛屿的数量。一个岛被水包围，并且它是通过水平方向或垂直方向上相邻的陆地连接而成的。你可以假设网格的四个边均被水包围。
+
+```html
+示例 1:
+
+输入:
+11110
+11010
+11000
+00000
+
+输出: 1
+示例 2:
+
+输入:
+11000
+11000
+00100
+00011
+
+输出: 3
+```
+
+- [深度优先搜索](#https://leetcode-cn.com/problems/number-of-islands/solution/dao-yu-shu-liang-by-leetcode/)
+
+- 广度优先搜索
+
+- 并查集
+
+  ```java
+  class Solution {
+    void dfs(char[][] grid, int r, int c) {
+      int nr = grid.length;
+      int nc = grid[0].length;
+  
+      if (r < 0 || c < 0 || r >= nr || c >= nc || grid[r][c] == '0') {
+        return;
+      }
+  
+      grid[r][c] = '0';
+      dfs(grid, r - 1, c);
+      dfs(grid, r + 1, c);
+      dfs(grid, r, c - 1);
+      dfs(grid, r, c + 1);
+    }
+  
+    public int numIslands(char[][] grid) {
+      if (grid == null || grid.length == 0) {
+        return 0;
+      }
+  
+      int nr = grid.length;
+      int nc = grid[0].length;
+      int num_islands = 0;
+      for (int r = 0; r < nr; ++r) {
+        for (int c = 0; c < nc; ++c) {
+          if (grid[r][c] == '1') {
+            ++num_islands;
+            dfs(grid, r, c);
+          }
+        }
+      }
+  
+      return num_islands;
+    }
+  }
+  ```
+
+  
