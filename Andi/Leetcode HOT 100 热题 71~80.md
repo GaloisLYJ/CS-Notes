@@ -2,14 +2,12 @@
 
 * [71. 目标和](#71-目标和)
 * [72. 二叉树的序列化与反序列化](#72-二叉树的序列化与反序列化)
-* [63. 最长上升子序列](#63-最长上升子序列)
-* [64. LRU缓存机制](#64. LRU缓存机制)
-* [65. 滑动窗口最大值](#65. 滑动窗口最大值)
-* [66. 单词拆分](#66. 单词拆分)
-* [67. 环形链表II](#67. 环形链表II)
-* [68. 环形链表](#68. 环形链表)
-* [69. 打家劫舍](#69. 打家劫舍)
-* [70. 删除无效的括号](#70. 删除无效的括号)
+* [73. 有效的括号](#74. 有效的括号)
+* [74. 单词搜索](#75. 单词搜索)
+* [75. 找到字符串中所有字母异位词](#76. 找到字符串中所有字母异位词)
+* [76. 回文链表](#76. 回文链表)
+
+  
 
 
   <!-- GFM-TOC -->
@@ -169,141 +167,256 @@ public class Codec {
 }
 ```
 
-# 73. 最长上升子序列
+# 73. 有效的括号
 
-[Leetcode #300 (Medium)](<https://leetcode-cn.com/problems/longest-increasing-subsequence/>)
+[Leetcode #20 (Easy)](https://leetcode-cn.com/problems/valid-parentheses/)
 
-给定一个无序的整数数组，找到其中最长上升子序列的长度。
+给定一个只包括 '('，')'，'{'，'}'，'['，']' 的字符串，判断字符串是否有效。
+
+有效字符串需满足：
+
+左括号必须用相同类型的右括号闭合。
+左括号必须以正确的顺序闭合。
+注意空字符串可被认为是有效字符串。
 
 ```html
-输入: [10,9,2,5,3,7,101,18]
-输出: 4 
-解释: 最长的上升子序列是 [2,3,7,101]，它的长度是 4。
+示例 1:
+
+输入: "()"
+输出: true
+示例 2:
+
+输入: "()[]{}"
+输出: true
+示例 3:
+
+输入: "(]"
+输出: false
+示例 4:
+
+输入: "([)]"
+输出: false
+示例 5:
+
+输入: "{[]}"
+输出: true
 ```
 
-说明:
-
-- 可能会有多种最长上升子序列的组合，你只需要输出对应的长度即可。
-- 你算法的时间复杂度应该为 O(n2) 。
-
-进阶: 你能将算法的时间复杂度降低到 O(n log n) 吗?
-
-- 暴力法
-- 带记忆的递归
-- 动态规划
-- 动态规划和二分搜索 
+- 栈
 
 ```java
 class Solution {
-    public int lengthOfLIS(int[] nums) {
-        int[] dp = new int[nums.length];
-        int len = 0;
-        for (int num : nums) {
-            int i = Arrays.binarySearch(dp, 0, len, num);
-            if (i < 0) {
-                i = -(i + 1);
-            }
-            dp[i] = num;
-            if (i == len) {
-                len++;
+
+  // Hash table that takes care of the mappings.
+  private HashMap<Character, Character> mappings;
+
+  // Initialize hash map with mappings. This simply makes the code easier to read.
+  public Solution() {
+    this.mappings = new HashMap<Character, Character>();
+    this.mappings.put(')', '(');
+    this.mappings.put('}', '{');
+    this.mappings.put(']', '[');
+  }
+
+  public boolean isValid(String s) {
+
+    // Initialize a stack to be used in the algorithm.
+    Stack<Character> stack = new Stack<Character>();
+
+    for (int i = 0; i < s.length(); i++) {
+      char c = s.charAt(i);
+
+      // If the current character is a closing bracket.
+      if (this.mappings.containsKey(c)) {
+
+        // Get the top element of the stack. If the stack is empty, set a dummy value of '#'
+        char topElement = stack.empty() ? '#' : stack.pop();
+
+        // If the mapping for this bracket doesn't match the stack's top element, return false.
+        if (topElement != this.mappings.get(c)) {
+          return false;
+        }
+      } else {
+        // If it was an opening bracket, push to the stack.
+        stack.push(c);
+      }
+    }
+
+    // If the stack still contains elements, then it is an invalid expression.
+    return stack.isEmpty();
+  }
+}
+```
+
+# 74. 单词搜索
+
+[Leetcode #79 (Medium)](https://leetcode-cn.com/problems/word-search/)
+
+给定一个二维网格和一个单词，找出该单词是否存在于网格中。
+
+单词必须按照字母顺序，通过相邻的单元格内的字母构成，其中“相邻”单元格是那些水平相邻或垂直相邻的单元格。同一个单元格内的字母不允许被重复使用。
+
+```html
+board =
+[
+  ['A','B','C','E'],
+  ['S','F','C','S'],
+  ['A','D','E','E']
+]
+
+给定 word = "ABCCED", 返回 true.
+给定 word = "SEE", 返回 true.
+给定 word = "ABCB", 返回 false.
+```
+
+- [二维平面上的回溯法](https://leetcode-cn.com/problems/two-sum/solution/zai-er-wei-ping-mian-shang-shi-yong-hui-su-fa-pyth/)
+
+```java
+public class Solution {
+
+    private boolean[][] marked;
+
+    //        x-1,y
+    // x,y-1  x,y    x,y+1
+    //        x+1,y
+    private int[][] direction = {{-1, 0}, {0, -1}, {0, 1}, {1, 0}};
+    // 盘面上有多少行
+    private int m;
+    // 盘面上有多少列
+    private int n;
+    private String word;
+    private char[][] board;
+
+    public boolean exist(char[][] board, String word) {
+        m = board.length;
+        if (m == 0) {
+            return false;
+        }
+        n = board[0].length;
+        marked = new boolean[m][n];
+        this.word = word;
+        this.board = board;
+
+        for (int i = 0; i < m; i++) {
+            for (int j = 0; j < n; j++) {
+                if (dfs(i, j, 0)) {
+                    return true;
+                }
             }
         }
-        return len;
+        return false;
+    }
+
+    private boolean dfs(int i, int j, int start) {
+        if (start == word.length() - 1) {
+            return board[i][j] == word.charAt(start);
+        }
+        if (board[i][j] == word.charAt(start)) {
+            marked[i][j] = true;
+            for (int k = 0; k < 4; k++) {
+                int newX = i + direction[k][0];
+                int newY = j + direction[k][1];
+                if (inArea(newX, newY) && !marked[newX][newY]) {
+                    if (dfs(newX, newY, start + 1)) {
+                        return true;
+                    }
+                }
+            }
+            marked[i][j] = false;
+        }
+        return false;
+    }
+
+    private boolean inArea(int x, int y) {
+        return x >= 0 && x < m && y >= 0 && y < n;
+    }
+
+    public static void main(String[] args) {
+
+//        char[][] board =
+//                {
+//                        {'A', 'B', 'C', 'E'},
+//                        {'S', 'F', 'C', 'S'},
+//                        {'A', 'D', 'E', 'E'}
+//                };
+//
+//        String word = "ABCCED";
+
+
+        char[][] board = {{'a', 'b'}};
+        String word = "ba";
+        Solution solution = new Solution();
+        boolean exist = solution.exist(board, word);
+        System.out.println(exist);
     }
 }
 ```
 
-# 64. LRU缓存机制
+# 75. 找到字符串中所有字母异位词
 
-[Leetcode #146 (Medium)](<https://leetcode-cn.com/problems/lru-cache/>)
+[Leetcode #438 (Easy)](https://leetcode-cn.com/problems/find-all-anagrams-in-a-string/)
 
-运用你所掌握的数据结构，设计和实现一个  `LRU (最近最少使用) 缓存机制`。它应该支持以下操作： 获取数据 `get` 和 写入数据 `put` 。
+给定一个字符串 s 和一个非空字符串 p，找到 s 中所有是 p 的字母异位词的子串，返回这些子串的起始索引。
 
-获取数据 `get(key)` - 如果密钥 `(key)` 存在于缓存中，则获取密钥的值（总是正数），否则返回 -1。
-写入数据 `put(key, value)` - 如果密钥不存在，则写入其数据值。当缓存容量达到上限时，它应该在写入新数据之前删除最近最少使用的数据值，从而为新的数据值留出空间。
+字符串只包含小写英文字母，并且字符串 s 和 p 的长度都不超过 20100。
 
-**进阶:**
+说明：
 
-你是否可以在 **O(1)** 时间复杂度内完成这两种操作？
-
-```html
-LRUCache cache = new LRUCache( 2 /* 缓存容量 */ );
-
-cache.put(1, 1);
-cache.put(2, 2);
-cache.get(1);       // 返回  1
-cache.put(3, 3);    // 该操作会使得密钥 2 作废
-cache.get(2);       // 返回 -1 (未找到)
-cache.put(4, 4);    // 该操作会使得密钥 1 作废
-cache.get(1);       // 返回 -1 (未找到)
-cache.get(3);       // 返回  3
-cache.get(4);       // 返回  4
-```
-
-- 有序字典
-- 哈希表+双向链表
-
-```java
-class LRUCache extends LinkedHashMap<Integer, Integer>{
-    private int capacity;
-    
-    public LRUCache(int capacity) {
-        super(capacity, 0.75F, true);
-        this.capacity = capacity;
-    }
-
-    public int get(int key) {
-        return super.getOrDefault(key, -1);
-    }
-
-    public void put(int key, int value) {
-        super.put(key, value);
-    }
-
-    @Override
-    protected boolean removeEldestEntry(Map.Entry<Integer, Integer> eldest) {
-        return size() > capacity; 
-    }
-}
-```
-
-# 65. 滑动窗口最大值
-
-[Leetcode #65 (Difficult)](<https://leetcode-cn.com/problems/sliding-window-maximum/>)
-
-给定一个数组 nums，有一个大小为 k 的滑动窗口从数组的最左侧移动到数组的最右侧。你只可以看到在滑动窗口 k 内的数字。滑动窗口每次只向右移动一位。
-
-返回滑动窗口最大值。
+字母异位词指字母相同，但排列不同的字符串。
+不考虑答案输出的顺序。
 
 ```html
-输入: nums = [1,3,-1,-3,5,3,6,7], 和 k = 3
-输出: [3,3,5,5,6,7] 
-解释: 
+示例 1:
 
-  滑动窗口的位置                最大值
----------------               -----
-[1  3  -1] -3  5  3  6  7       3
- 1 [3  -1  -3] 5  3  6  7       3
- 1  3 [-1  -3  5] 3  6  7       5
- 1  3  -1 [-3  5  3] 6  7       5
- 1  3  -1  -3 [5  3  6] 7       6
- 1  3  -1  -3  5 [3  6  7]      7
+输入:
+s: "cbaebabacd" p: "abc"
+
+输出:
+[0, 6]
+
+解释:
+起始索引等于 0 的子串是 "cba", 它是 "abc" 的字母异位词。
+起始索引等于 6 的子串是 "bac", 它是 "abc" 的字母异位词。
+ 示例 2:
+
+输入:
+s: "abab" p: "ab"
+
+输出:
+[0, 1, 2]
+
+解释:
+起始索引等于 0 的子串是 "ab", 它是 "ab" 的字母异位词。
+起始索引等于 1 的子串是 "ba", 它是 "ab" 的字母异位词。
+起始索引等于 2 的子串是 "ab", 它是 "ab" 的字母异位词。
 ```
 
-**注意：**
-
-你可以假设 *k* 总是有效的，1 ≤ k ≤ 输入数组的大小，且输入数组不为空。
-
-**进阶：**
-
-你能在线性时间复杂度内解决此题吗？
-
-- 暴力法
-- 双向队列
-- 动态规划
+- [双指针 滑动窗口](https://leetcode-cn.com/problems/find-all-anagrams-in-a-string/solution/shuang-zhi-zhen-hua-kuai-by-mr_tao/)
 
 ```java
-class Solution {
+public List<Integer> findAnagrams(String s, String p) {
+        List<Integer> result = new ArrayList<>();
+        int[] p_letter = new int[26];
+        for (int i = 0; i < p.length(); i++) {//记录p里面的数字分别有几个
+            p_letter[p.charAt(i) - 'a']++;
+        }
+        int start = 0;
+        int end = 0;
+        int[] between_letter = new int[26];//记录两个指针之间的数字都有几个
+        while (end < s.length()) {
+            int c = s.charAt(end++) - 'a';//每一次拿到end指针对应的字母
+            between_letter[c]++;//让这个字母的数量+1
+
+            //如果这个字母的数量比p里面多了,说明这个start坐标需要排除
+            while (between_letter[c] > p_letter[c]) {
+                between_letter[s.charAt(start++) - 'a']--;
+            }
+            if (end - start == p.length()) {
+                result.add(start);
+            }
+        }
+        return result;
+    }  class Solution {
   public int[] maxSlidingWindow(int[] nums, int k) {
     int n = nums.length;
     if (n * k == 0) return new int[0];
@@ -333,56 +446,52 @@ class Solution {
 }
 ```
 
-# 66. 单词拆分
+# 76. 回文链表
 
-[Leetcode #139 (Medium)](<https://leetcode-cn.com/problems/word-break/>)
+[Leetcode #234 (Easy)](https://leetcode-cn.com/problems/palindrome-linked-list/)
 
-给定一个非空字符串 s 和一个包含非空单词列表的字典 wordDict，判定 s 是否可以被空格拆分为一个或多个在字典中出现的单词。
-
-说明：
-
-- 拆分时可以重复使用字典中的单词。
-- 你可以假设字典中没有重复的单词。
+请判断一个链表是否为回文链表。
 
 ```html
-示例 1：
+示例 1:
 
-输入: s = "leetcode", wordDict = ["leet", "code"]
-输出: true
-解释: 返回 true 因为 "leetcode" 可以被拆分成 "leet code"。
-示例 2：
-
-输入: s = "applepenapple", wordDict = ["apple", "pen"]
-输出: true
-解释: 返回 true 因为 "applepenapple" 可以被拆分成 "apple pen apple"。
-     注意你可以重复使用字典中的单词。
-示例 3：
-
-输入: s = "catsandog", wordDict = ["cats", "dog", "sand", "and", "cat"]
+输入: 1->2
 输出: false
+示例 2:
+
+输入: 1->2->2->1
+输出: true
+
 ```
 
-- 暴力
-- 记忆化回溯
-- 宽度优先搜索
-- 动态规划
+进阶：
+你能否用 O(n) 时间复杂度和 O(1) 空间复杂度解决此题？
+
+- 快慢指针
 
 ```java
-public class Solution {
-    public boolean wordBreak(String s, List<String> wordDict) {
-        Set<String> wordDictSet=new HashSet(wordDict);
-        boolean[] dp = new boolean[s.length() + 1];
-        dp[0] = true;
-        for (int i = 1; i <= s.length(); i++) {
-            for (int j = 0; j < i; j++) {
-                if (dp[j] && wordDictSet.contains(s.substring(j, i))) {
-                    dp[i] = true;
-                    break;
-                }
-            }
-        }
-        return dp[s.length()];
-    }
+public boolean isPalindrome(ListNode head) {
+  if(head == null || head.next == null) return true;
+  ListNode slow = head, fast = head.next, pre = null, prepre = null;
+  while(fast != null && fast.next != null) {
+    //反转前半段链表
+    pre = slow;
+    slow = slow.next;
+    fast = fast.next.next;
+    //先移动指针再来反转
+    pre.next = prepre;
+    prepre = pre;
+  }
+  ListNode p2 = slow.next;
+  slow.next = pre;
+  ListNode p1 = fast == null? slow.next : slow;
+  while(p1 != null) {
+    if(p1.val != p2.val)
+      return false;
+    p1 = p1.next;
+    p2 = p2.next;
+  }
+  return true;
 }
 ```
 
