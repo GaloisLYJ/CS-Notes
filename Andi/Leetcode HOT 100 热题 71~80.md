@@ -1,13 +1,26 @@
 <!-- GFM-TOC -->
 
 * [71. 目标和](#71-目标和)
+
 * [72. 二叉树的序列化与反序列化](#72-二叉树的序列化与反序列化)
-* [73. 有效的括号](#74. 有效的括号)
-* [74. 单词搜索](#75. 单词搜索)
-* [75. 找到字符串中所有字母异位词](#76. 找到字符串中所有字母异位词)
+
+* [73. 有效的括号](#73. 有效的括号)
+
+* [74. 单词搜索](#74. 单词搜索)
+
+* [75. 找到字符串中所有字母异位词](#75. 找到字符串中所有字母异位词)
+
 * [76. 回文链表](#76. 回文链表)
 
-  
+* [77. 柱状图中最大矩形](#77. 柱状图中最大的矩形)
+
+* [78. 最大正方形](#78. 最大正方形)
+
+* [79. 搜索二维矩阵II](#79. 搜索二维矩阵II)
+
+* [80. 在排序数组中查找元素的第一个和最后一个位置](#80. 在排序数组中查找元素的第一个和最后一个位置)
+
+* 
 
 
   <!-- GFM-TOC -->
@@ -495,287 +508,298 @@ public boolean isPalindrome(ListNode head) {
 }
 ```
 
-# 67. 环形链表II
+# 77. 柱状图中最大的矩形
 
-[Leetcode #142 (Medium)](<https://leetcode-cn.com/problems/linked-list-cycle-ii/>)
+[Leetcode #77 (Difficult)](https://leetcode-cn.com/problems/largest-rectangle-in-histogram/)
 
-给定一个链表，返回链表开始入环的第一个节点。 如果链表无环，则返回 null。
+给定 *n* 个非负整数，用来表示柱状图中各个柱子的高度。每个柱子彼此相邻，且宽度为 1 。
 
-为了表示给定链表中的环，我们使用整数 pos 来表示链表尾连接到链表中的位置（索引从 0 开始）。 如果 pos 是 -1，则在该链表中没有环。
+求在该柱状图中，能够勾勒出来的矩形的最大面积。
 
-说明：不允许修改给定的链表。
+<img src="https://assets.leetcode-cn.com/aliyun-lc-upload/uploads/2018/10/12/histogram.png">
 
-```html
-示例 1：
+以上是柱状图的示例，其中每个柱子的宽度为 1，给定的高度为 `[2,1,5,6,2,3]`。
 
-输入：head = [3,2,0,-4], pos = 1
-输出：tail connects to node index 1
-解释：链表中有一个环，其尾部连接到第二个节点。
-```
+<img src="https://assets.leetcode-cn.com/aliyun-lc-upload/uploads/2018/10/12/histogram_area.png">
 
-<img src="https://assets.leetcode-cn.com/aliyun-lc-upload/uploads/2018/12/07/circularlinkedlist.png">
+图中阴影部分为所能勾勒出的最大矩形面积，其面积为 `10` 个单位。
 
 ```html
-示例 2：
+示例:
 
-输入：head = [1,2], pos = 0
-输出：tail connects to node index 0
-解释：链表中有一个环，其尾部连接到第一个节点。
+输入: [2,1,5,6,2,3]
+输出: 10
 ```
 
-<img src="https://assets.leetcode-cn.com/aliyun-lc-upload/uploads/2018/12/07/circularlinkedlist_test2.png">
-
-```html
-示例 3：
-
-输入：head = [1], pos = -1
-输出：no cycle
-解释：链表中没有环。
-```
-
-<img src="https://assets.leetcode-cn.com/aliyun-lc-upload/uploads/2018/12/07/circularlinkedlist_test3.png">
-
-- 哈希表
-- [Floyd算法](<https://leetcode-cn.com/problems/linked-list-cycle-ii/solution/huan-xing-lian-biao-ii-by-leetcode/>)
+- 优化的分治
 
 ```java
-/**
- * Definition for singly-linked list.
- * class ListNode {
- *     int val;
- *     ListNode next;
- *     ListNode(int x) {
- *         val = x;
- *         next = null;
- *     }
- * }
- */
-public class Solution {
-    private ListNode getIntersect(ListNode head) {
-        ListNode tortoise = head;
-        ListNode hare = head;
-
-        // A fast pointer will either loop around a cycle and meet the slow
-        // pointer or reach the `null` at the end of a non-cyclic list.
-        while (hare != null && hare.next != null) {
-            tortoise = tortoise.next;
-            hare = hare.next.next;
-            if (tortoise == hare) {
-                return tortoise;
+        public int largestRectangleArea(int[] heights) {
+            Stack < Integer > stack = new Stack < > ();
+            stack.push(-1);
+            int maxarea = 0;
+            for (int i = 0; i < heights.length; ++i) {
+                while (stack.peek() != -1 && heights[stack.peek()] >= heights[i])
+                    maxarea = Math.max(maxarea, heights[stack.pop()] * (i - stack.peek() - 1));
+                stack.push(i);
             }
+            while (stack.peek() != -1)
+                maxarea = Math.max(maxarea, heights[stack.pop()] * (heights.length - stack.peek() -1));
+            return maxarea;
         }
-
-        return null;
-}
-
-    public ListNode detectCycle(ListNode head) {
-        if (head == null) {
-            return null;
-        }
-
-        // If there is a cycle, the fast/slow pointers will intersect at some
-        // node. Otherwise, there is no cycle, so we cannot find an e***ance to
-        // a cycle.
-        ListNode intersect = getIntersect(head);
-        if (intersect == null) {
-            return null;
-        }
-
-        // To find the e***ance to the cycle, we have two pointers traverse at
-        // the same speed -- one from the front of the list, and the other from
-        // the point of intersection.
-        ListNode ptr1 = head;
-        ListNode ptr2 = intersect;
-        while (ptr1 != ptr2) {
-            ptr1 = ptr1.next;
-            ptr2 = ptr2.next;
-        }
-
-        return ptr1;
-    }
-}
 ```
 
-# 68. 环形链表
+# 78. 最大正方形
 
-[Leetcode #141 (Easy)](<https://leetcode-cn.com/problems/linked-list-cycle/>)
+[Leetcode #221 (Medium)](https://leetcode-cn.com/problems/maximal-square/)
 
-给定一个链表，判断链表中是否有环。
-
-为了表示给定链表中的环，我们使用整数 pos 来表示链表尾连接到链表中的位置（索引从 0 开始）。 如果 pos 是 -1，则在该链表中没有环。
-
-实例说明与上题同。
-
-- 哈希表
-- 双指针
+在一个由 0 和 1 组成的二维矩阵内，找到只包含 1 的最大正方形，并返回其面积。
 
 ```java
-public boolean hasCycle(ListNode head) {
-    if (head == null || head.next == null) {
-        return false;
-    }
-    ListNode slow = head;
-    ListNode fast = head.next;
-    while (slow != fast) {
-        if (fast == null || fast.next == null) {
-            return false;
-        }
-        slow = slow.next;
-        fast = fast.next.next;
-    }
-    return true;
-}
-```
+示例:
 
-# 69. 打家劫舍
+输入: 
 
-[Leetcode #198 (Easy)](<https://leetcode-cn.com/problems/house-robber/>)
+1 0 1 0 0
+1 0 1 1 1
+1 1 1 1 1
+1 0 0 1 0
 
-你是一个专业的小偷，计划偷窃沿街的房屋。每间房内都藏有一定的现金，影响你偷窃的唯一制约因素就是相邻的房屋装有相互连通的防盗系统，**如果两间相邻的房屋在同一晚上被小偷闯入，系统会自动报警。**
-
-给定一个代表每个房屋存放金额的非负整数数组，计算你**在不触动警报装置的情况下**，能够偷窃到的最高金额。
-
-```html
-示例 1:
-
-输入: [1,2,3,1]
 输出: 4
-解释: 偷窃 1 号房屋 (金额 = 1) ，然后偷窃 3 号房屋 (金额 = 3)。
-     偷窃到的最高金额 = 1 + 3 = 4 。
-示例 2:
-
-输入: [2,7,9,3,1]
-输出: 12
-解释: 偷窃 1 号房屋 (金额 = 2), 偷窃 3 号房屋 (金额 = 9)，接着偷窃 5 号房屋 (金额 = 1)。
-     偷窃到的最高金额 = 2 + 9 + 1 = 12 。
 ```
 
-- [动态规划真有这么好？](<https://leetcode-cn.com/problems/house-robber/solution/da-jia-jie-she-by-leetcode/>)
+- 动态规划
 
-```java
-public int rob(int[] num) {
-    int prevMax = 0;
-    int currMax = 0;
-    for (int x : num) {
-        int temp = currMax;
-        currMax = Math.max(prevMax + x, currMax);
-        prevMax = temp;
-    }
-    return currMax;
-}
-```
+- 动态规划优化
 
-# 70. 删除无效的括号
+  ```java
+      public int maximalSquare(char[][] matrix) {
+          int rows = matrix.length, cols = rows > 0 ? matrix[0].length : 0;
+          int[][] dp = new int[rows + 1][cols + 1];
+          int maxsqlen = 0;
+          for (int i = 1; i <= rows; i++) {
+              for (int j = 1; j <= cols; j++) {
+                  if (matrix[i-1][j-1] == '1'){
+                      dp[i][j] = Math.min(Math.min(dp[i][j - 1], dp[i - 1][j]), dp[i - 1][j - 1]) + 1;
+                      maxsqlen = Math.max(maxsqlen, dp[i][j]);
+                  }
+              }
+          }
+          return maxsqlen * maxsqlen;
+      }
+  ```
 
-[Leetcode #301 (Difficult)](<https://leetcode-cn.com/problems/remove-invalid-parentheses/>)
+# 79. 打家劫舍
 
-删除最小数量的无效括号，使得输入的字符串有效，返回所有可能的结果。
+[Leetcode #56 (Medium)](https://leetcode-cn.com/problems/merge-intervals/)
 
-**说明:** 输入可能包含了除 `(` 和 `)` 以外的字符。
+给出一个区间的集合，请合并所有重叠的区间。
 
 ```html
 示例 1:
 
-输入: "()())()"
-输出: ["()()()", "(())()"]
-示例 2:
+输入: [[1,3],[2,6],[8,10],[15,18]]
+输出: [[1,6],[8,10],[15,18]]
+解释: 区间 [1,3] 和 [2,6] 重叠, 将它们合并为 [1,6].
+示例 2:
 
-输入: "(a)())()"
-输出: ["(a)()()", "(a())()"]
-示例 3:
-
-输入: ")("
-输出: [""]
+输入: [[1,4],[4,5]]
+输出: [[1,5]]
+解释: 区间 [1,4] 和 [4,5] 可被视为重叠区间。
 ```
 
-- 回溯
-- 有限的回溯
+- [连通块](https://leetcode-cn.com/problems/merge-intervals/solution/java-shi-jian-fu-za-du-onlogn-by-horanol/)
+- 排序
 
 ```java
 class Solution {
-
-  private Set<String> validExpressions = new HashSet<String>();
-
-  private void recurse(
-      String s,
-      int index,
-      int leftCount,
-      int rightCount,
-      int leftRem,
-      int rightRem,
-      StringBuilder expression) {
-
-    // If we reached the end of the string, just check if the resulting expression is
-    // valid or not and also if we have removed the total number of left and right
-    // parentheses that we should have removed.
-    if (index == s.length()) {
-      if (leftRem == 0 && rightRem == 0) {
-        this.validExpressions.add(expression.toString());
-      }
-
-    } else {
-      char character = s.charAt(index);
-      int length = expression.length();
-
-      // The discard case. Note that here we have our pruning condition.
-      // We don't recurse if the remaining count for that parenthesis is == 0.
-      if ((character == '(' && leftRem > 0) || (character == ')' && rightRem > 0)) {
-        this.recurse(
-            s,
-            index + 1,
-            leftCount,
-            rightCount,
-            leftRem - (character == '(' ? 1 : 0),
-            rightRem - (character == ')' ? 1 : 0),
-            expression);
-      }
-
-      expression.append(character);
-
-      // Simply recurse one step further if the current character is not a parenthesis.
-      if (character != '(' && character != ')') {
-
-        this.recurse(s, index + 1, leftCount, rightCount, leftRem, rightRem, expression);
-
-      } else if (character == '(') {
-
-        // Consider an opening bracket.
-        this.recurse(s, index + 1, leftCount + 1, rightCount, leftRem, rightRem, expression);
-
-      } else if (rightCount < leftCount) {
-
-        // Consider a closing bracket.
-        this.recurse(s, index + 1, leftCount, rightCount + 1, leftRem, rightRem, expression);
-      }
-
-      // Delete for backtracking.
-      expression.deleteCharAt(length);
-    }
-  }
-
-  public List<String> removeInvalidParentheses(String s) {
-
-    int left = 0, right = 0;
-
-    // First, we find out the number of misplaced left and right parentheses.
-    for (int i = 0; i < s.length(); i++) {
-
-      // Simply record the left one.
-      if (s.charAt(i) == '(') {
-        left++;
-      } else if (s.charAt(i) == ')') {
-        // If we don't have a matching left, then this is a misplaced right, record it.
-        right = left == 0 ? right + 1 : right;
-
-        // Decrement count of left parentheses because we have found a right
-        // which CAN be a matching one for a left.
-        left = left > 0 ? left - 1 : left;
-      }
+    public int[][] merge(int[][] intervals) {
+        if (intervals == null || intervals.length == 0 || intervals[0].length == 0)
+            return new int[0][0];
+        LinkedList<Interval> list = new LinkedList<>();
+        for (int i = 0; i < intervals.length; i++) {
+            int[] nums = intervals[i];
+            Interval in = new Interval(nums[0], nums[1]);
+            list.add(in);
+        }
+        //按照区间第一个数字排序
+        list.sort(Comparator.comparingInt(o -> o.num1));
+        List<Interval> resList = new ArrayList<>();
+        Interval first = list.removeFirst();
+        while (!list.isEmpty()) {
+            Interval second = list.removeFirst();
+            if (first.num2 < second.num1) {
+                //两个区间不相交
+                resList.add(first);
+                first = second;
+            } else {
+                //合并两个区间
+                first = new Interval(first.num1, Math.max(first.num2, second.num2));
+            }
+        }
+        resList.add(first);
+        int[][] res = new int[resList.size()][2];
+        for (int i = 0; i < resList.size(); i++) {
+            res[i][0] = resList.get(i).num1;
+            res[i][1] = resList.get(i).num2;
+        }
+        return res;
     }
 
-    this.recurse(s, 0, 0, 0, left, right, new StringBuilder());
-    return new ArrayList<String>(this.validExpressions);
-  }
+    class Interval {
+        int num1;
+        int num2;
+
+        Interval(int num1, int num2) {
+            this.num1 = num1;
+            this.num2 = num2;
+        }
+    }
+}
+```
+
+# 79. 搜索二维矩阵
+
+[Leetcode #240 (Medium)](https://leetcode-cn.com/problems/search-a-2d-matrix-ii/)
+
+编写一个高效的算法来搜索 m x n 矩阵 matrix 中的一个目标值 target。该矩阵具有以下特性：
+
+- 每行的元素从左到右升序排列。
+- 每列的元素从上到下升序排列。
+
+```html
+示例:
+
+现有矩阵 matrix 如下：
+
+[
+  [1,   4,  7, 11, 15],
+  [2,   5,  8, 12, 19],
+  [3,   6,  9, 16, 22],
+  [10, 13, 14, 17, 24],
+  [18, 21, 23, 26, 30]
+]
+```
+
+给定 target = `5`，返回 `true`。
+
+给定 target = `20`，返回 `false`。
+
+- 二分法搜索
+- 搜索空间的缩减
+
+```java
+class Solution {
+    private boolean binarySearch(int[][] matrix, int target, int start, boolean vertical) {
+        int lo = start;
+        int hi = vertical ? matrix[0].length-1 : matrix.length-1;
+
+        while (hi >= lo) {
+            int mid = (lo + hi)/2;
+            if (vertical) { // searching a column
+                if (matrix[start][mid] < target) {
+                    lo = mid + 1;
+                } else if (matrix[start][mid] > target) {
+                    hi = mid - 1;
+                } else {
+                    return true;
+                }
+            } else { // searching a row
+                if (matrix[mid][start] < target) {
+                    lo = mid + 1;
+                } else if (matrix[mid][start] > target) {
+                    hi = mid - 1;
+                } else {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    public boolean searchMatrix(int[][] matrix, int target) {
+        // an empty matrix obviously does not contain `target`
+        if (matrix == null || matrix.length == 0) {
+            return false;
+        }
+
+        // iterate over matrix diagonals
+        int shorterDim = Math.min(matrix.length, matrix[0].length);
+        for (int i = 0; i < shorterDim; i++) {
+            boolean verticalFound = binarySearch(matrix, target, i, true);
+            boolean horizontalFound = binarySearch(matrix, target, i, false);
+            if (verticalFound || horizontalFound) {
+                return true;
+            }
+        }
+        
+        return false; 
+    }
+}
+```
+
+#80. 在排序数组中查找元素的第一个和最后一个位置
+
+[Leetcode #34. (Medium)](#https://leetcode-cn.com/problems/find-first-and-last-position-of-element-in-sorted-array/)
+
+给定一个按照升序排列的整数数组 `nums`，和一个目标值 `target`。找出给定目标值在数组中的开始位置和结束位置。
+
+你的算法时间复杂度必须是 O(log n) 级别。
+
+如果数组中不存在目标值，返回 `[-1, -1]`。
+
+```html
+示例 1:
+
+输入: nums = [5,7,7,8,8,10], target = 8
+输出: [3,4]
+示例 2:
+
+输入: nums = [5,7,7,8,8,10], target = 6
+输出: [-1,-1]
+```
+
+- 线性扫描
+- 二分查找
+
+```java
+class Solution {
+    // returns leftmost (or rightmost) index at which `target` should be
+    // inserted in sorted array `nums` via binary search.
+    private int extremeInsertionIndex(int[] nums, int target, boolean left) {
+        int lo = 0;
+        int hi = nums.length;
+
+        while (lo < hi) {
+            int mid = (lo + hi) / 2;
+            if (nums[mid] > target || (left && target == nums[mid])) {
+                hi = mid;
+            }
+            else {
+                lo = mid+1;
+            }
+        }
+
+        return lo;
+    }
+
+    public int[] searchRange(int[] nums, int target) {
+        int[] targetRange = {-1, -1};
+
+        int leftIdx = extremeInsertionIndex(nums, target, true);
+
+        // assert that `leftIdx` is within the array bounds and that `target`
+        // is actually in `nums`.
+        if (leftIdx == nums.length || nums[leftIdx] != target) {
+            return targetRange;
+        }
+
+        targetRange[0] = leftIdx;
+        targetRange[1] = extremeInsertionIndex(nums, target, false)-1;
+
+        return targetRange;
+    }
 }
 ```
 
