@@ -1,11 +1,22 @@
 <!-- GFM-TOC -->
 
 * [71. 目标和](#71-目标和)
+
 * [72. 二叉树的序列化与反序列化](#72-二叉树的序列化与反序列化)
+
 * [73. 有效的括号](#74. 有效的括号)
+
 * [74. 单词搜索](#75. 单词搜索)
+
 * [75. 找到字符串中所有字母异位词](#76. 找到字符串中所有字母异位词)
+
 * [76. 回文链表](#76. 回文链表)
+
+* [77. 二叉树中的最大路径和](#77. 二叉树中的最大路径和)
+
+* [78. 最小覆盖子串](#78. 最小覆盖子串)
+
+* [79. 搜索旋转排序数组](#79. 搜索旋转排序数组)
 
   
 
@@ -495,173 +506,249 @@ public boolean isPalindrome(ListNode head) {
 }
 ```
 
-# 67. 环形链表II
+# 77. 二叉树中的最大路径和
 
-[Leetcode #142 (Medium)](<https://leetcode-cn.com/problems/linked-list-cycle-ii/>)
+[Leetcode #124 (Difficult)](https://leetcode-cn.com/problems/binary-tree-maximum-path-sum/)
 
-给定一个链表，返回链表开始入环的第一个节点。 如果链表无环，则返回 null。
+给定一个**非空**二叉树，返回其最大路径和。
 
-为了表示给定链表中的环，我们使用整数 pos 来表示链表尾连接到链表中的位置（索引从 0 开始）。 如果 pos 是 -1，则在该链表中没有环。
-
-说明：不允许修改给定的链表。
-
-```html
-示例 1：
-
-输入：head = [3,2,0,-4], pos = 1
-输出：tail connects to node index 1
-解释：链表中有一个环，其尾部连接到第二个节点。
-```
-
-<img src="https://assets.leetcode-cn.com/aliyun-lc-upload/uploads/2018/12/07/circularlinkedlist.png">
-
-```html
-示例 2：
-
-输入：head = [1,2], pos = 0
-输出：tail connects to node index 0
-解释：链表中有一个环，其尾部连接到第一个节点。
-```
-
-<img src="https://assets.leetcode-cn.com/aliyun-lc-upload/uploads/2018/12/07/circularlinkedlist_test2.png">
-
-```html
-示例 3：
-
-输入：head = [1], pos = -1
-输出：no cycle
-解释：链表中没有环。
-```
-
-<img src="https://assets.leetcode-cn.com/aliyun-lc-upload/uploads/2018/12/07/circularlinkedlist_test3.png">
-
-- 哈希表
-- [Floyd算法](<https://leetcode-cn.com/problems/linked-list-cycle-ii/solution/huan-xing-lian-biao-ii-by-leetcode/>)
-
-```java
-/**
- * Definition for singly-linked list.
- * class ListNode {
- *     int val;
- *     ListNode next;
- *     ListNode(int x) {
- *         val = x;
- *         next = null;
- *     }
- * }
- */
-public class Solution {
-    private ListNode getIntersect(ListNode head) {
-        ListNode tortoise = head;
-        ListNode hare = head;
-
-        // A fast pointer will either loop around a cycle and meet the slow
-        // pointer or reach the `null` at the end of a non-cyclic list.
-        while (hare != null && hare.next != null) {
-            tortoise = tortoise.next;
-            hare = hare.next.next;
-            if (tortoise == hare) {
-                return tortoise;
-            }
-        }
-
-        return null;
-}
-
-    public ListNode detectCycle(ListNode head) {
-        if (head == null) {
-            return null;
-        }
-
-        // If there is a cycle, the fast/slow pointers will intersect at some
-        // node. Otherwise, there is no cycle, so we cannot find an e***ance to
-        // a cycle.
-        ListNode intersect = getIntersect(head);
-        if (intersect == null) {
-            return null;
-        }
-
-        // To find the e***ance to the cycle, we have two pointers traverse at
-        // the same speed -- one from the front of the list, and the other from
-        // the point of intersection.
-        ListNode ptr1 = head;
-        ListNode ptr2 = intersect;
-        while (ptr1 != ptr2) {
-            ptr1 = ptr1.next;
-            ptr2 = ptr2.next;
-        }
-
-        return ptr1;
-    }
-}
-```
-
-# 68. 环形链表
-
-[Leetcode #141 (Easy)](<https://leetcode-cn.com/problems/linked-list-cycle/>)
-
-给定一个链表，判断链表中是否有环。
-
-为了表示给定链表中的环，我们使用整数 pos 来表示链表尾连接到链表中的位置（索引从 0 开始）。 如果 pos 是 -1，则在该链表中没有环。
-
-实例说明与上题同。
-
-- 哈希表
-- 双指针
-
-```java
-public boolean hasCycle(ListNode head) {
-    if (head == null || head.next == null) {
-        return false;
-    }
-    ListNode slow = head;
-    ListNode fast = head.next;
-    while (slow != fast) {
-        if (fast == null || fast.next == null) {
-            return false;
-        }
-        slow = slow.next;
-        fast = fast.next.next;
-    }
-    return true;
-}
-```
-
-# 69. 打家劫舍
-
-[Leetcode #198 (Easy)](<https://leetcode-cn.com/problems/house-robber/>)
-
-你是一个专业的小偷，计划偷窃沿街的房屋。每间房内都藏有一定的现金，影响你偷窃的唯一制约因素就是相邻的房屋装有相互连通的防盗系统，**如果两间相邻的房屋在同一晚上被小偷闯入，系统会自动报警。**
-
-给定一个代表每个房屋存放金额的非负整数数组，计算你**在不触动警报装置的情况下**，能够偷窃到的最高金额。
+本题中，路径被定义为一条从树中任意节点出发，达到任意节点的序列。该路径**至少包含一个**节点，且不一定经过根节点。
 
 ```html
 示例 1:
 
-输入: [1,2,3,1]
-输出: 4
-解释: 偷窃 1 号房屋 (金额 = 1) ，然后偷窃 3 号房屋 (金额 = 3)。
-     偷窃到的最高金额 = 1 + 3 = 4 。
-示例 2:
+输入: [1,2,3]
 
-输入: [2,7,9,3,1]
-输出: 12
-解释: 偷窃 1 号房屋 (金额 = 2), 偷窃 3 号房屋 (金额 = 9)，接着偷窃 5 号房屋 (金额 = 1)。
-     偷窃到的最高金额 = 2 + 9 + 1 = 12 。
+       1
+      / \
+     2   3
+
+输出: 6
+示例 2:
+
+输入: [-10,9,20,null,null,15,7]
+
+   -10
+   / \
+  9  20
+    /  \
+   15   7
+
+输出: 42
 ```
 
-- [动态规划真有这么好？](<https://leetcode-cn.com/problems/house-robber/solution/da-jia-jie-she-by-leetcode/>)
+- [Floyd算法](<https://leetcode-cn.com/problems/linked-list-cycle-ii/solution/huan-xing-lian-biao-ii-by-leetcode/>)
 
 ```java
-public int rob(int[] num) {
-    int prevMax = 0;
-    int currMax = 0;
-    for (int x : num) {
-        int temp = currMax;
-        currMax = Math.max(prevMax + x, currMax);
-        prevMax = temp;
+  int max_sum = Integer.MIN_VALUE;
+
+  public int max_gain(TreeNode node) {
+    if (node == null) return 0;
+
+    // max sum on the left and right sub-trees of node
+    int left_gain = Math.max(max_gain(node.left), 0);
+    int right_gain = Math.max(max_gain(node.right), 0);
+
+    // the price to start a new path where `node` is a highest node
+    int price_newpath = node.val + left_gain + right_gain;
+
+    // update max_sum if it's better to start a new path
+    max_sum = Math.max(max_sum, price_newpath);
+
+    // for recursion :
+    // return the max gain if continue the same path
+    return node.val + Math.max(left_gain, right_gain);
+  }
+
+  public int maxPathSum(TreeNode root) {
+    max_gain(root);
+    return max_sum;
+  }
+```
+
+# 78. 最小覆盖子串
+
+[Leetcode #76 (Difficult)](<https://leetcode-cn.com/problems/minimum-window-substring/>)
+
+**示例：**
+
+```
+输入: S = "ADOBECODEBANC", T = "ABC"
+输出: "BANC"
+```
+
+**说明：**
+
+- 如果 S 中不存这样的子串，则返回空字符串 `""`。
+- 如果 S 中存在这样的子串，我们保证它是唯一的答案
+
+- 滑动窗口
+- 优化滑动窗口
+
+```java
+import javafx.util.Pair;
+
+class Solution {
+    public String minWindow(String s, String t) {
+
+        if (s.length() == 0 || t.length() == 0) {
+            return "";
+        }
+
+        Map<Character, Integer> dictT = new HashMap<Character, Integer>();
+
+        for (int i = 0; i < t.length(); i++) {
+            int count = dictT.getOrDefault(t.charAt(i), 0);
+            dictT.put(t.charAt(i), count + 1);
+        }
+
+        int required = dictT.size();
+
+        // Filter all the characters from s into a new list along with their index.
+        // The filtering criteria is that the character should be present in t.
+        List<Pair<Integer, Character>> filteredS = new ArrayList<Pair<Integer, Character>>();
+        for (int i = 0; i < s.length(); i++) {
+            char c = s.charAt(i);
+            if (dictT.containsKey(c)) {
+                filteredS.add(new Pair<Integer, Character>(i, c));
+            }
+        }
+
+        int l = 0, r = 0, formed = 0;
+        Map<Character, Integer> windowCounts = new HashMap<Character, Integer>();  
+        int[] ans = {-1, 0, 0};
+
+        // Look for the characters only in the filtered list instead of entire s.
+        // This helps to reduce our search.
+        // Hence, we follow the sliding window approach on as small list.
+        while (r < filteredS.size()) {
+            char c = filteredS.get(r).getValue();
+            int count = windowCounts.getOrDefault(c, 0);
+            windowCounts.put(c, count + 1);
+
+            if (dictT.containsKey(c) && windowCounts.get(c).intValue() == dictT.get(c).intValue()) {
+                formed++;
+            }
+
+            // Try and co***act the window till the point where it ceases to be 'desirable'.
+            while (l <= r && formed == required) {
+                c = filteredS.get(l).getValue();
+
+                // Save the smallest window until now.
+                int end = filteredS.get(r).getKey();
+                int start = filteredS.get(l).getKey();
+                if (ans[0] == -1 || end - start + 1 < ans[0]) {
+                    ans[0] = end - start + 1;
+                    ans[1] = start;
+                    ans[2] = end;
+                }
+
+                windowCounts.put(c, windowCounts.get(c) - 1);
+                if (dictT.containsKey(c) && windowCounts.get(c).intValue() < dictT.get(c).intValue()) {
+                    formed--;
+                }
+                l++;
+            }
+            r++;   
+        }
+        return ans[0] == -1 ? "" : s.substring(ans[1], ans[2] + 1);
     }
-    return currMax;
+}
+```
+
+# 79. 搜索旋转排序数组
+
+[Leetcode #33 (Medium)](<https://leetcode-cn.com/problems/search-in-rotated-sorted-array/>)
+
+假设按照升序排序的数组在预先未知的某个点上进行了旋转。
+
+( 例如，数组 `[0,1,2,4,5,6,7]` 可能变为 `[4,5,6,7,0,1,2]` )。
+
+搜索一个给定的目标值，如果数组中存在这个目标值，则返回它的索引，否则返回 -1 。
+
+你可以假设数组中不存在重复的元素。
+
+你的算法时间复杂度必须是 O(log n) 级别
+
+```html
+示例 1:
+
+输入: nums = [4,5,6,7,0,1,2], target = 0
+输出: 4
+示例 2:
+
+输入: nums = [4,5,6,7,0,1,2], target = 3
+输出: -1
+```
+
+- 二分查找
+
+```java
+class Solution {
+  int [] nums;
+  int target;
+
+  public int find_rotate_index(int left, int right) {
+    if (nums[left] < nums[right])
+      return 0;
+
+    while (left <= right) {
+      int pivot = (left + right) / 2;
+      if (nums[pivot] > nums[pivot + 1])
+        return pivot + 1;
+      else {
+        if (nums[pivot] < nums[left])
+          right = pivot - 1;
+        else
+          left = pivot + 1;
+      }
+    }
+    return 0;
+  }
+
+  public int search(int left, int right) {
+    /*
+    Binary search
+    */
+    while (left <= right) {
+      int pivot = (left + right) / 2;
+      if (nums[pivot] == target)
+        return pivot;
+      else {
+        if (target < nums[pivot])
+          right = pivot - 1;
+        else
+          left = pivot + 1;
+      }
+    }
+    return -1;
+  }
+
+  public int search(int[] nums, int target) {
+    this.nums = nums;
+    this.target = target;
+
+    int n = nums.length;
+
+    if (n == 0)
+      return -1;
+    if (n == 1)
+      return this.nums[0] == target ? 0 : -1;
+
+    int rotate_index = find_rotate_index(0, n - 1);
+
+    // if target is the smallest element
+    if (nums[rotate_index] == target)
+      return rotate_index;
+    // if array is not rotated, search in the entire array
+    if (rotate_index == 0)
+      return search(0, n - 1);
+    if (target < nums[0])
+      // search in the right side
+      return search(rotate_index, n - 1);
+    // search in the left side
+    return search(0, rotate_index);
+  }
 }
 ```
 
